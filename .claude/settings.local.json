@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python -c \"import reportlab, sys; print\\(reportlab.Version, sys.version\\)\")",
+      "Bash(python -c \"import fpdf; print\\('fpdf ok'\\)\")",
+      "Bash(pip install *)",
+      "Bash(python -c \"import reportlab; print\\(reportlab.Version\\)\")",
+      "Bash(python make_pdf.py)",
+      "Bash(python -)",
+      "Bash(where pdflatex *)",
+      "Bash(where miktex-console *)",
+      "Bash(pdflatex -interaction=nonstopmode -halt-on-error -enable-installer denial.tex)",
+      "Bash(pdflatex -interaction=nonstopmode -halt-on-error denial.tex)",
+      "Bash(cp denial.pdf \"C:/Users/yakka/Downloads/One_Word_Denial_Kodak_LinkedIn_Blog.pdf\")",
+      "Bash(cp denial.tex \"C:/Users/yakka/Downloads/One_Word_Denial_Kodak_LinkedIn_Blog.tex\")",
+      "Bash(gh pr *)"
+    ]
+  }
+}
