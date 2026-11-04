@@ -146,7 +146,11 @@ class CampusBot:
             {"role": "system", "content": SYSTEM_PROMPT + "\n\nContext:\n" + context},
             {"role": "user", "content": text},
         ]
-        answer = self.generate(messages).strip()
+        try:
+            answer = self.generate(messages).strip()
+        except Exception:  # model API down/rate-limited: still show the sourced passages
+            body = "\n\n".join(f"[{i}] ({f}, {w})\n{t}" for i, f, w, t in cites)
+            return "The language model is unavailable right now. Relevant passages:\n\n" + body
         if "don't have that in my knowledge base" in answer.lower():
             return REFUSAL
         refs = "\n".join(f"[{i}] {f} ({w})" for i, f, w, _t in cites)

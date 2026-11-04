@@ -134,3 +134,9 @@ pytest -q
 
 The tests generate all fixtures at runtime with `reportlab`, `python-pptx`, and
 `python-docx`; no external documents are needed.
+
+## Server deployment (celureai)
+`server/serve.py` runs Gradio on 127.0.0.1:7860 over a SQLite FTS5 knowledge DB (`server/build_db.py`), answering via
+Ollama Cloud (`campus_gpt/ollama.py`, key from `~/.config/campus-gpt.env`). A cloudflared quick tunnel exposes it.
+Add documents: copy files to `data/raw/` (names like `BCS502-module-3-textbook.pdf`), then
+`python -m campus_gpt.ingest.build --input data/raw --out data/chunks.jsonl && python -m server.build_db`.
