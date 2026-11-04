@@ -35,12 +35,17 @@ def _allow(ip: str, now: float | None = None) -> bool:
     return True
 
 
-def build_bot() -> CampusBot:
-    db = os.environ.get("CAMPUS_DB", "data/campus.db")
+def build_bot():
+    """``CAMPUS_MODE=web`` (default): web search + model, no database. ``db``: knowledge database."""
+    mode = os.environ.get("CAMPUS_MODE", "web").lower()
     try:
         gen = make_generate()
     except LLMUnavailable:
-        gen = None  # no key yet: answers fall back to cited passages
+        gen = None  # no key yet
+    if mode == "web" and gen is not None:
+        from campus_gpt.web import WebBot
+        return WebBot(gen, os.environ.get("OLLAMA_API_KEY", ""))
+    db = os.environ.get("CAMPUS_DB", "data/campus.db")
     return CampusBot(retriever=SqliteRetriever(db), generate=gen)
 
 
