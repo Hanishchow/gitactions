@@ -1,0 +1,31 @@
+PROJECT: Campus GPT (VTU-SLM-BOT), an AI syllabus chatbot for VTU (Visvesvaraya Technological University) AI&ML students at Acharya Institute of Technology. You are building TASK T1 of 6: the verified knowledge base. All output goes in your task folder under campus-gpt/kb/. This is a chain task: use /usr/local/bin/opencode for subtasks if useful, but you must independently verify everything before reporting.
+
+STANDARDS (mandatory):
+1. NO fabricated facts or numbers. Every fact must come from a page/PDF you actually fetched in this task. Record source_url and fetched_on (ISO date) per entry. If you cannot confirm something from a fetched source, set verified: false and say why. Never guess course codes, credits, marks or topics.
+2. Verify independently: re-open the files you wrote, re-parse the YAML with python, validate the schema below, and report exact commands + outputs.
+3. Python 3.10+, no secrets, stay inside your task folder.
+4. End with a report: files created, commands run, validation output, every verified:false item with reason, every conflict between sources, and what T2 needs to know.
+5. Save key decisions with mem_save (subject list, schema, conflicts found).
+
+GOAL: produce two files.
+
+A) campus-gpt/kb/rules.yaml: VTU academic rules, 2022 scheme: CIE minimum marks (of 50), SEE minimum marks (of 50), aggregate minimum (of 100), minimum attendance and any condonation limits, CBCS grade table (letter, percentage range, grade points), CGPA to percentage formula. Primary source: VTU Regulations governing B.E./B.Tech 2022, https://vtu.ac.in/wp-content/uploads/2023/05/Regulations-Clr-BE-BTECH-2022-611-02052023.pdf . IMPORTANT: a student project slide states "CIE minimum 18/50, SEE minimum 18/50" while another source says CIE 20/50 (40%) and SEE 18/50 (35%). Settle this from the regulations PDF text, quote the exact sentence you relied on, and flag the discrepancy explicitly in your report. Also confirm the attendance rule exactly (a draft says 85% mandatory; check for 75% condonation wording).
+
+B) campus-gpt/kb/subjects.yaml: one entry per subject with this schema:
+ code, title, scheme ("2022"), branch_scope, semester, category (e.g. IPCC/PCC/PEC/OEC/AEC), credits, hours (L:T:P:S if available), cie_marks, see_marks, modules: [ {number, title, topics: [..]} ], textbooks: [..], course_outcomes: [..] (only if present in source), source_url, fetched_on, verified (bool), notes.
+Subjects to cover (course codes were read from a student's shared files; the code-to-title mapping is NOT confirmed, so find the real titles from VTU sources and do not assume):
+ - BCS502, BCS503 (CSE-family 5th semester codes; confirm titles)
+ - BAI701, BAI613A, BAI613x electives list, BAI601, BAI602, BAIL606, BAI702, BAI703, BAI714x, BAI755x, BAI786
+ - BEC654B (Consumer Electronics, ECE open elective; confirm)
+ - AIML 2022-scheme semester 3 and 4 course lists
+Official sources to start from (fetch with the web tools; extract text from PDFs):
+ https://vtu.ac.in/pdf/2022_3to8/aimlsch.pdf (AIML sem III-IV scheme)
+ https://vtu.ac.in/pdf/2022_3to8/58aimlsch.pdf (AIML sem V-VIII scheme)
+ https://vtu.ac.in/b-e-scheme-syllabus/ (index of scheme/syllabus PDFs; follow links to per-branch syllabus PDFs that contain the module-wise content for the codes above)
+Capture module titles and topic lists per module wherever the syllabus PDF provides them. If a code is not in any PDF you can fetch, keep the entry with verified: false and empty modules rather than inventing content.
+
+DEFINITION OF DONE:
+ - rules.yaml and subjects.yaml exist, parse with PyYAML, and pass a schema check you write as campus-gpt/kb/validate_kb.py (checks required keys, types, that verified:true entries have source_url and fetched_on, that credits sum correctly per semester where the scheme table gives a total).
+ - Run validate_kb.py and show its output.
+ - Report includes a table: code | title | verified | modules found | source_url.
+ - Include a short campus-gpt/kb/README.md describing schema and how to re-run validation.

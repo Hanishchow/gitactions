@@ -1,0 +1,7 @@
+data/raw/
+*.safetensors
+*.bin
+*.gguf
+*.pt
+__pycache__/
+.venv/

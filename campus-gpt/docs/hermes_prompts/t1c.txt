@@ -1,0 +1,14 @@
+﻿PROJECT: Campus GPT (VTU-SLM-BOT), a syllabus chatbot for VTU AI&ML students. This is a SMALL, strict sub-task of the verified knowledge base. A previous attempt failed: it produced wrong values marked verified:true and never used opencode. Do not repeat that.
+
+STANDARDS (mandatory):
+1. Every value you record must be backed by an EXACT quoted sentence or table row from a document you actually fetched in this task. Store it in an evidence field next to the value: {value, evidence_quote, source_url, page_or_clause, fetched_on}. No quote, no value: set null and verified:false.
+2. Never use memory or prior assumptions to fill a value. If two sources disagree, record both with quotes and set verified:false.
+3. Use PDF text extraction (pdftotext or pypdf) and show the extraction command. If a PDF cannot be fetched or has no text layer, say so; do not guess.
+4. Use /usr/local/bin/opencode run --auto -m opencode/deepseek-v4.1-flash-free "<subtask>" at least once for a bounded subtask (for example drafting YAML from text you extracted), then check its output against the source quotes yourself and report what you corrected.
+5. Independently verify: re-parse the YAML with python, run the validator, and re-check every number against its quote. Report exact commands and outputs.
+6. Stay inside your task folder. No secrets. Save key findings with mem_save.
+7. End with a report: files, commands, validation output, a table of every value with its quote, and every verified:false item with the reason.
+
+TASK T1c: campus-gpt/kb/syllabus_modules.yaml
+Goal: module-wise syllabus for these courses: BCS502, BCS503, BAI701, BAI613A, BEC654B. Their titles are NOT confirmed (BCS502 may be Computer Networks, BCS503 Theory of Computation, BEC654B Consumer Electronics, BAI613A Human-Centred AI, BAI701 Deep Learning and Reinforcement Learning, but verify from the PDFs). Starting point: https://vtu.ac.in/b-e-scheme-syllabus/ (follow links to 2022-scheme CSE, AIML and ECE syllabus PDFs, including per-semester syllabus PDFs). Find the page of each course syllabus and extract: course code, title, credits, hours, CIE/SEE marks, course objectives, modules 1 to 5 with the module title (if any) and the topic text exactly as printed, textbooks and reference books, course outcomes. Quote the course header line as evidence and record PDF URL and page number. If a course is not in any PDF you can fetch, return the entry with verified:false and empty modules; do not fill from memory.
+Write kb/validate_syllabus.py (every verified:true entry must have 5 modules or an explicit note, source_url, page, fetched_on, evidence header quote) and run it. Report a table: code | title | verified | modules | page | url.

@@ -1,0 +1,15 @@
+﻿PROJECT: Campus GPT (VTU-SLM-BOT), a syllabus chatbot for VTU AI&ML students. This is a SMALL, strict sub-task of the verified knowledge base. A previous attempt failed: it produced wrong values marked verified:true and never used opencode. Do not repeat that.
+
+STANDARDS (mandatory):
+1. Every value you record must be backed by an EXACT quoted sentence or table row from a document you actually fetched in this task. Store it in an evidence field next to the value: {value, evidence_quote, source_url, page_or_clause, fetched_on}. No quote, no value: set null and verified:false.
+2. Never use memory or prior assumptions to fill a value. If two sources disagree, record both with quotes and set verified:false.
+3. Use PDF text extraction (pdftotext or pypdf) and show the extraction command. If a PDF cannot be fetched or has no text layer, say so; do not guess.
+4. Use /usr/local/bin/opencode run --auto -m opencode/deepseek-v4.1-flash-free "<subtask>" at least once for a bounded subtask (for example drafting YAML from text you extracted), then check its output against the source quotes yourself and report what you corrected.
+5. Independently verify: re-parse the YAML with python, run the validator, and re-check every number against its quote. Report exact commands and outputs.
+6. Stay inside your task folder. No secrets. Save key findings with mem_save.
+7. End with a report: files, commands, validation output, a table of every value with its quote, and every verified:false item with the reason.
+
+TASK T1b: campus-gpt/kb/aiml_scheme.yaml
+Sources: https://vtu.ac.in/pdf/2022_3to8/aimlsch.pdf (AIML 2022 scheme sem III-IV) and https://vtu.ac.in/pdf/2022_3to8/58aimlsch.pdf (sem V-VIII). Extract text per page and record every course row for semesters 3 to 7 exactly as printed: semester, course code, title, category (IPCC/PCC/PCCL/PEC/OEC/AEC/UHV/etc.), L:T:P:S hours, credits, CIE marks, SEE marks, total marks, elective option codes and titles under each elective slot, per-semester total credits and marks as printed. Record the PDF page number for each row. If a row cell is blank or unreadable record null, never infer. Check each semester's credit total: sum of rows vs printed total, and report mismatches (do not silently fix).
+Context for checking, NOT for filling: a draft listed sem VI as BAI601 NLP, BAI602 ML-I, BAI613x electives (A Human-Centred AI, B Cloud Computing, C Blockchain, D Time Series), BAI654x open electives, BAI685 project phase I, BAIL606 ML lab, BAI657x AEC, BIKS609 IKS, NSS/PE/Yoga; and sem VII as BAI701 Deep Learning & RL, BAI702 ML-II, BAI703 Data Security & Privacy, BAI714x electives, BAI755x open electives, BAI786 project phase II. Report which items the PDFs confirm, contradict, or omit, including IKS credits (draft said 0 in one place and 1 in another) and the sem VI credit total (draft said 18).
+Write kb/validate_scheme.py (checks keys, numeric types, evidence page present, credit-sum check) and run it.

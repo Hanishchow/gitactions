@@ -1,0 +1,21 @@
+PROJECT: Campus GPT (VTU-SLM-BOT), an AI syllabus chatbot for VTU AI&ML students. You are building TASK T2 of 6: document ingestion + retrieval (RAG core). Output goes in your task folder under campus-gpt/. Another task (T1) is separately producing campus-gpt/kb/subjects.yaml and rules.yaml; you cannot see its files, so use the schema below and build your own tiny sample versions for tests. This is a chain task: use /usr/local/bin/opencode for subtasks if useful, but independently verify everything before reporting.
+
+STANDARDS (mandatory):
+1. NO fabricated facts or numbers. Do not invent VTU data, benchmarks or results. Test fixtures must be obviously synthetic (e.g. subject code "TST101", "Synthetic Networks").
+2. Verify independently: run the tests you wrote and show exact commands and output. pytest must finish with zero failures.
+3. Python 3.10+, type hints, docstrings on public functions, pinned versions in requirements.txt, no secrets, no network or GPU needed for tests, deterministic output, stay inside your task folder.
+4. Reuse libraries rather than hand-rolling: pypdf, python-pptx, python-docx, rank-bm25 (or an equivalent small pure-Python BM25), pyyaml, pytest.
+5. End with a report: files created, commands run, test output, open issues, what T3 (the bot) needs to know about your public API.
+6. Save key decisions (chunk schema, API names, parameters) with mem_save.
+
+KB SCHEMA (subjects.yaml, list of entries): code, title, scheme, semester, category, credits, modules: [ {number, title, topics: [str]} ], textbooks: [str], source_url, fetched_on, verified (bool). rules.yaml: list of {id, question_keywords: [str], answer, source_url, verified}.
+
+BUILD:
+A) ingest/: extract text from PDF (per page), PPTX (per slide, include notes), DOCX (per heading section), and plain .txt/.md. API: extract_file(path) -> list of {text, location} where location is {"page": n} or {"slide": n} or {"section": title}. Handle empty/scanned pages by skipping with a logged warning, never crashing.
+B) chunking: split into ~800-character chunks with 120-char overlap on sentence/paragraph boundaries, never splitting inside a word. Each chunk: {id, text, file, location, subject (code or None), module (int or None), char_len}. Infer subject/module only from filename patterns like "BCS502-module-3-textbook.pdf" or "Module-4_Notes.pdf" using one regex helper, otherwise None. Write chunks to data/chunks.jsonl (UTF-8, one JSON per line). CLI: python -m ingest.build --input data/raw --out data/chunks.jsonl.
+C) rag/: BM25 index built from chunks.jsonl, saved/loaded as a file (pickle or json). API: Retriever.load(path); retrieve(query, k=5, subject=None, module=None) -> list of {chunk, score}. Lowercase, simple tokenizer, small stopword list, subject-code tokens like "BCS502" and "22AI31" must stay intact as single tokens and match case-insensitively. Also a structured lookup over subjects.yaml: find_subject(code_or_name) and get_module(code, number). Optional embedding backend behind a flag (use_embeddings=False by default) that imports sentence_transformers lazily and is NOT exercised by tests.
+D) Return a clear "no result" signal (empty list) when the best BM25 score is below a configurable min_score; never return unrelated chunks to look helpful.
+E) tests/: synthetic fixtures generated inside the tests (build a tiny PDF with reportlab or fpdf2, a PPTX with python-pptx, a DOCX with python-docx) covering: each extractor, chunk size/overlap/word-boundary rules, filename inference, subject-code token matching, retrieval ranking on a hand-checkable query, subject/module filters, below-threshold returns empty, index save/load roundtrip.
+F) README.md for the package: install, run ingest, query from Python.
+
+DEFINITION OF DONE: pytest -v green with the exact output shown; a demo script demo_query.py that ingests the synthetic fixtures and prints top-3 results with file/page citations for two sample queries; report lists the public API signatures T3 will call.

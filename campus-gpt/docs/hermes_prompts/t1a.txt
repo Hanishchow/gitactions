@@ -1,0 +1,16 @@
+﻿PROJECT: Campus GPT (VTU-SLM-BOT), a syllabus chatbot for VTU AI&ML students. This is a SMALL, strict sub-task of the verified knowledge base. A previous attempt failed: it produced wrong values marked verified:true and never used opencode. Do not repeat that.
+
+STANDARDS (mandatory):
+1. Every value you record must be backed by an EXACT quoted sentence or table row from a document you actually fetched in this task. Store it in an evidence field next to the value: {value, evidence_quote, source_url, page_or_clause, fetched_on}. No quote, no value: set null and verified:false.
+2. Never use memory or prior assumptions to fill a value. If two sources disagree, record both with quotes and set verified:false.
+3. Use PDF text extraction (pdftotext or pypdf) and show the extraction command. If a PDF cannot be fetched or has no text layer, say so; do not guess.
+4. Use /usr/local/bin/opencode run --auto -m opencode/deepseek-v4.1-flash-free "<subtask>" at least once for a bounded subtask (for example drafting YAML from text you extracted), then check its output against the source quotes yourself and report what you corrected.
+5. Independently verify: re-parse the YAML with python, run the validator, and re-check every number against its quote. Report exact commands and outputs.
+6. Stay inside your task folder. No secrets. Save key findings with mem_save.
+7. End with a report: files, commands, validation output, a table of every value with its quote, and every verified:false item with the reason.
+
+TASK T1a: campus-gpt/kb/rules.yaml
+Source: https://vtu.ac.in/wp-content/uploads/2023/05/Regulations-Clr-BE-BTECH-2022-611-02052023.pdf (and, only if needed, other official vtu.ac.in regulation/circular PDFs you can find from https://vtu.ac.in).
+Extract with evidence quotes: (a) CIE minimum marks and as a percentage; (b) SEE minimum marks and percentage (search for words like "SEE", "Semester End", "35%", "minimum"); (c) minimum aggregate/total to pass a course (CIE+SEE) as marks out of 100; (d) minimum attendance percentage and any condonation limit wording; (e) the CBCS grade table: every letter grade, its percentage/marks range and grade point exactly as printed; (f) SGPA and CGPA formulas and the CGPA to percentage conversion exactly as printed (state "not printed" if absent). Separate rows must be named: cie_min, see_min, aggregate_min, attendance_min, attendance_condonation, grade_table, sgpa_formula, cgpa_formula, cgpa_to_percentage.
+Context for checking, NOT for filling: a student draft claimed CIE 18/50, SEE 18/50, aggregate 40/100, grades O 90-100 GP10, A+ 80-89 GP9, A 70-79 GP8, B+ 60-69 GP7, B 55-59 GP6, C 50-54 GP5, P 40-49 GP4, F <40 GP0, and Percentage=(CGPA-0.75)*10. Say for each whether the regulations support, contradict, or do not mention it, with quotes.
+Also write kb/validate_rules.py that fails if any verified:true entry lacks evidence_quote, source_url or fetched_on, and run it.
