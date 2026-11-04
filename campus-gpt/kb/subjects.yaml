@@ -1,0 +1,44 @@
+# VTU AIML 2022 scheme, semesters 5-8. Course codes, titles, categories, credits and marks were read
+# from text extracted from the official scheme PDF https://vtu.ac.in/pdf/2022_3to8/58aimlsch.pdf
+# on 2026-11-04. Module-wise topic text is NOT in the scheme PDF, so modules are empty until the
+# per-course syllabus or the textbooks are ingested. Semesters 3-4 are not covered yet.
+semesters:
+  5:
+    note: "Credits not captured from the extracted text."
+    courses:
+      - {code: BCS501, title: "Software Engineering & Project Management", category: PCC}
+      - {code: BCS502, title: "Computer Networks", category: IPCC}
+      - {code: BCS503, title: "Theory of Computation", category: PCC}
+      - {code: BAIL504, title: "Data Visualization Lab", category: PCCL}
+      - {code: BAI515x, title: "Professional Elective Course", category: PEC, options: ["BAI515A Computer Vision", "BAI515B Information Retrieval", "BAI515E Exploratory Data Analysis", "BCS515C Unix System Programming", "BCS515D Distributed Systems"]}
+      - {code: BAI586, title: "Mini Project", category: PROJ}
+      - {code: BRMK557, title: "Research Methodology and IPR", category: AEC}
+      - {code: BCS508, title: "Environmental Studies and E-waste", category: HSMS}
+      - {code: BNSK559, title: "National Service Scheme (NSS)", category: MC}
+  6:
+    note: "Credits for the non-credit mandatory and IKS rows: IKS BIKS609 is 0 credits (1 hour, CIE 100)."
+    courses:
+      - {code: BAI601, title: "Natural Language Processing", category: IPCC, credits: 4}
+      - {code: BAI602, title: "Machine Learning-I", category: PCC, credits: 4}
+      - {code: BAI613x, title: "Professional Elective Course", category: PEC, credits: 3, options: ["BAI613A Human-Centred AI", "BAI613B Cloud Computing", "BAI613C Blockchain Technology", "BAI613D Time Series Analysis"]}
+      - {code: BAI654x, title: "Open Elective Course", category: OEC, credits: 3, options: ["BAI654A Introduction to Data Structures", "BAI654B Fundamentals of Operating Systems", "BAI654C Mobile Application Development"]}
+      - {code: BAI685, title: "Project Phase I", category: PROJ, credits: 2}
+      - {code: BAIL606, title: "Machine Learning Lab", category: PCCL, credits: 1}
+      - {code: BAI657x, title: "Ability Enhancement / Skill Development Course", category: AEC, credits: 1, options: ["BAI657A Explainable AI", "BAI657B PyTorch", "BAI657C Generative AI", "BAI657D DevOps"]}
+      - {code: BNSK658, title: "National Service Scheme (NSS)", category: MC, credits: 0, note: "alternatives BPEK658 Physical Education, BYOK658 Yoga"}
+      - {code: BIKS609, title: "Indian Knowledge System", category: IKS, credits: 0}
+  7:
+    note: "Scheme A; semesters VII and VIII are swappable. Total 24 credits, 400 CIE + 300 SEE = 700 marks."
+    courses:
+      - {code: BAI701, title: "Deep Learning & Reinforcement Learning", category: IPCC, credits: 4, hours: "3:0:2", cie: 50, see: 50}
+      - {code: BAI702, title: "Machine Learning-II", category: IPCC, credits: 4, hours: "3:0:2", cie: 50, see: 50}
+      - {code: BAI703, title: "Data Security & Privacy", category: PCC, credits: 4, hours: "4:0:0", cie: 50, see: 50, note: "listed as BAD703 in a second table of the same PDF"}
+      - {code: BAI714x, title: "Professional Elective Course", category: PEC, credits: 3, cie: 50, see: 50, options: ["BAI714A IOT Analytics", "BAI714B Business Analytics", "BAI714C Data Engineering & MLOps", "BAI714D Big Data Analytics"]}
+      - {code: BAI755x, title: "Open Elective Course", category: OEC, credits: 3, cie: 50, see: 50, options: ["BAI755A Introduction to DBMS", "BAI755B Introduction to Algorithms", "BAI755C Software Engineering"]}
+      - {code: BAI786, title: "Major Project Phase-II", category: PROJ, credits: 6, hours: "0:0:12", cie: 100, see: 100}
+  8:
+    note: "Scheme A. Total 16 credits, 200 CIE + 200 SEE = 400 marks. Elective titles are not yet published (NPTEL only)."
+    courses:
+      - {code: BAI801x, title: "Professional Elective (online, NPTEL only)", category: PEC, credits: 3, cie: 50, see: 50}
+      - {code: BAI802x, title: "Open Elective (online, NPTEL only)", category: OEC, credits: 3, cie: 50, see: 50}
+      - {code: BAI803, title: "Internship (Industry/Research), 14-20 weeks", category: INT, credits: 10, cie: 100, see: 100}

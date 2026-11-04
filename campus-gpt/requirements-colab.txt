@@ -1,0 +1,10 @@
+transformers>=4.46
+accelerate
+bitsandbytes
+peft
+gradio
+pypdf
+python-pptx
+python-docx
+rank-bm25
+pyyaml

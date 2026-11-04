@@ -1,0 +1,31 @@
+# VTU 2022-scheme academic rules. Every value was read in the text of the official
+# regulations PDF on 2026-11-04 (clause numbers given). Source:
+# https://vtu.ac.in/wp-content/uploads/2023/05/Regulations-Clr-BE-BTECH-2022-611-02052023.pdf
+- id: cie_min
+  keywords: [cie, internal, internals, "internal marks", "internal assessment"]
+  answer: "Minimum in CIE (internals) is 40% of the marks allotted for CIE in each course, i.e. 20 out of 50 (regulations, CIE clause 5)."
+  verified: true
+- id: see_min
+  keywords: [see, external, externals, "semester end", "external marks"]
+  answer: "SEE (semester end exam) is weighted out of 50 marks and the pass requirement is 35% of the maximum SEE marks, i.e. 17.5, so 18 out of 50 in practice (regulation 22OB, 'Maximum and Minimum SEE Marks')."
+  verified: true
+- id: pass_total
+  keywords: [pass, passing, "passing marks", aggregate, "pass criteria", "passing criteria", "minimum marks", "how many marks"]
+  answer: "To pass a course the sum of CIE and SEE must be at least 40% of the course's maximum marks (40 out of 100), with the minimum CIE (40% of CIE marks) and minimum SEE (35% of SEE marks) also met. The minimum passing grade is P (grade point 4)."
+  verified: true
+- id: attendance
+  keywords: [attendance, condonation, condone, shortage, dx]
+  answer: "Minimum attendance is 85% in each registered course. A shortage of up to 10% may be condoned by the Vice Chancellor on specific grounds with valid documents. Attendance below 75% gives grade DX (course must be repeated)."
+  verified: true
+- id: grades
+  keywords: [grade, grades, grading, "grade point", "grade points", cbcs, "letter grade"]
+  answer: "Grade table (percentage of total marks -> letter, grade point): 90-100 O (10); 80-89 A+ (9); 70-79 A (8); 60-69 B+ (7); 55-59 B (6); 50-54 C (5); 40-49 P (4); 0-39 F (0)."
+  verified: true
+- id: sgpa_cgpa
+  keywords: [sgpa, cgpa, "grade point average"]
+  answer: "SGPA = sum(Ci x Gi) / sum(Ci) over the semester's courses, where Ci is the credits and Gi the grade point of course i. CGPA is computed the same way over all courses so far. For employment or higher studies, percentage = CGPA x 10 (e.g. 8.20 -> 82.0%), per regulation 22OB 6.7."
+  verified: true
+- id: cgpa_percentage
+  keywords: [percentage, convert, conversion, "cgpa to percentage", equivalent]
+  answer: "Under the 2022 regulations, percentage of marks M = CGPA x 10 (example: CGPA 8.20 gives 82.0%). Class equivalence: First Class with Distinction if M >= 70; First Class if 60 <= M < 70 (22OB 6.7-6.8). Older schemes used (CGPA - 0.75) x 10; that formula is not in the 2022 regulations."
+  verified: true

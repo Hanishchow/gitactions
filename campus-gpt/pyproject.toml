@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "campus-gpt"
+version = "0.1.0"
+description = "Local document ingestion, chunking, and BM25 retrieval for campus documents"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "CampusGPT contributors" }]
+dependencies = [
+    "pypdf>=3.16.0",
+    "python-pptx>=0.6.23",
+    "python-docx>=0.8.11",
+    "rank-bm25>=0.2.2",
+    "pyyaml>=6.0",
+    "reportlab>=4.0.0",
+    "fpdf2>=2.7.5",
+]
+
+[project.optional-dependencies]
+test = ["pytest>=7.4"]
+embeddings = ["sentence-transformers>=2.2"]
+
+[tool.setuptools.packages.find]
+include = ["campus_gpt*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"
