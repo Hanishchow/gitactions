@@ -14,9 +14,20 @@ from .kb import load_rules, load_subjects
 Generate = Callable[[List[Dict[str, str]]], str]
 
 REFUSAL = (
-    "I don't have that in my knowledge base. Please check the official VTU portal "
-    "(https://vtu.ac.in/b-e-scheme-syllabus/) or ask your faculty."
+    "I don't have that in my knowledge base yet. I can answer: VTU rules (marks, attendance, "
+    "grades, CGPA), AIML 2022 scheme courses for semesters 5-8 (try 'AIML 7th sem subjects' or "
+    "'BAI701'), and topics from the course documents loaded so far. Textbook topics such as "
+    "'AI/ML basics' work once that course material is added. Official portal: "
+    "https://vtu.ac.in/b-e-scheme-syllabus/"
 )
+
+GREETING = (
+    "Hi! I'm Campus GPT for VTU AI & ML students. Ask me about marks and passing rules, "
+    "attendance, grades and CGPA, AIML scheme courses (e.g. 'AIML 7th sem subjects', 'BAI701'), "
+    "or topics from the course material in my database. I only answer from that database."
+)
+
+_GREET_RE = re.compile(r"^\s*(hi+|hello+|hey+|hola|namaste|help|what can you do\??|who are you\??)\s*[!.?]*\s*$", re.I)
 
 SYSTEM_PROMPT = (
     "You are Campus GPT, an assistant for VTU AI & ML students. Answer ONLY from the "
@@ -160,6 +171,8 @@ class CampusBot:
     def answer(self, question: str, history: Optional[Sequence[Any]] = None) -> str:
         """Answer ``question``; ``history`` is Gradio's list of message dicts."""
         text = (question or "").strip()
+        if _GREET_RE.match(text):
+            return GREETING
         if not text:
             return (
                 "Ask me about VTU rules (marks, attendance, grades, CGPA), "

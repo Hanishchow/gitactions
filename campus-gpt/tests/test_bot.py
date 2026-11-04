@@ -125,3 +125,13 @@ def test_llm_refusal_is_normalised(rag_bot):
 
 def test_unrelated_query_refused_with_retriever(rag_bot):
     assert CampusBot(retriever=rag_bot).answer("zebra quantum bananas") == REFUSAL
+
+
+def test_greeting_and_help(bot):
+    for q in ("hi", "Hello!", "help", "what can you do?"):
+        assert "Campus GPT" in bot.answer(q)
+
+
+def test_refusal_lists_what_it_can_answer(bot):
+    out = bot.answer("ai ml basics?")
+    assert out == REFUSAL and "AIML 7th sem subjects" in out
