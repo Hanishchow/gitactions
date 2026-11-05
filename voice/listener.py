@@ -61,6 +61,7 @@ class Listener:
         self.stream = None
         self.speaking = False
         self.busy = False
+        self.pending = None
         self.active_until = 0.0
         self.floor = 0.005
         mw = c["mic_watch"]
@@ -121,7 +122,7 @@ class Listener:
     def transcribe(self, audio):
         segs, _ = self.stt.transcribe(
             audio, language="en", beam_size=1, condition_on_previous_text=False,
-            initial_prompt="Hey Claude, open Chrome. Claude, stop.")
+            initial_prompt="Hey Claude, open Notepad. Open Chrome. Open Spotify. Open Settings. Open File Explorer. Open YouTube. Claude, stop.")
         return " ".join(s.text.strip() for s in segs if s.no_speech_prob < 0.6).strip()
 
     def run_command(self, text):
@@ -134,6 +135,9 @@ class Listener:
         finally:
             self.busy = False
             self.active_until = time.time() + self.cfg["wake"]["followup_s"]
+        nxt, self.pending = self.pending, None
+        if nxt:
+            self.run_command(nxt)
 
     def handle(self, audio):
         if self.speaker and not self.speaker.is_owner(audio):
@@ -153,8 +157,11 @@ class Listener:
         elif kind == "wake":
             self.active_until = time.time() + self.cfg["wake"]["followup_s"]
             threading.Thread(target=self.say, args=("Yes?",), daemon=True).start()
-        elif kind == "command" and not self.busy:
-            threading.Thread(target=self.run_command, args=(cmd,), daemon=True).start()
+        elif kind == "command":
+            if self.busy:
+                self.pending = cmd  # run right after the current task
+            else:
+                threading.Thread(target=self.run_command, args=(cmd,), daemon=True).start()
 
     # ---- main loop ------------------------------------------------------
     def run(self):

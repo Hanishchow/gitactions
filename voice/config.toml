@@ -11,7 +11,7 @@ min_speech_s = 0.35
 max_utterance_s = 20
 
 [stt]
-model = "base.en"                # tiny.en (fastest) / base.en / small.en (most accurate)
+model = "small.en"                # tiny.en (fastest) / base.en / small.en (most accurate)
 compute_type = "int8"
 
 [wake]
