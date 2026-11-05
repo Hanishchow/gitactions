@@ -1,0 +1,7 @@
+__pycache__/
+.pytest_cache/
+voice/.venv/
+voice/models/
+voice/logs/
+voice/voiceprint*
+*.env
