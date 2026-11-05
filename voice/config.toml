@@ -1,0 +1,33 @@
+[audio]
+device = "AMD Audio Device"      # substring of the input device name
+hostapi = "DirectSound"          # resamples to 16 kHz for us
+frame_ms = 30
+
+[vad]
+min_rms = 0.012                  # absolute floor for "speech"
+noise_mult = 3.0                 # speech must exceed noise floor * this
+end_silence_s = 0.8
+min_speech_s = 0.35
+max_utterance_s = 20
+
+[stt]
+model = "base.en"                # tiny.en (fastest) / base.en / small.en (most accurate)
+compute_type = "int8"
+
+[wake]
+phrases = ["claude", "clod", "cloud", "claud", "clawed", "clode"]
+followup_s = 20                  # after a command you can keep talking without the wake word
+stop_phrases = ["stop", "cancel", "never mind", "stop listening"]
+
+[speaker]
+verify = false                   # set true after running: python -m voice.enroll
+threshold = 0.75
+
+[mic_watch]
+ignore = ["discord", "krisp", "alexa", "amdnoisesuppression", "moises"]   # idle mic holders
+pause_after_s = 1.0
+resume_after_s = 2.0
+poll_s = 0.5
+
+[claude]
+workdir = ""                     # empty = your home folder
