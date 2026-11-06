@@ -5,3 +5,4 @@ voice/models/
 voice/logs/
 voice/voiceprint*
 *.env
+voice/session.id
