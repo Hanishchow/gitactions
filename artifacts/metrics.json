@@ -1,0 +1,37 @@
+{
+  "data": {
+    "kind": "synthetic",
+    "n_train": 25200,
+    "n_val": 5400,
+    "n_test": 5400
+  },
+  "mlp": {
+    "r2": 0.9964422583580017,
+    "mae": 0.01194214541465044,
+    "params": 45057,
+    "fp32_kb": 176.00390625,
+    "int8_kb": 44.0009765625,
+    "latency_ms": 0.08735000028536888,
+    "monotonic_violation_rate": 0.0
+  },
+  "transformer": {
+    "r2": 0.9968222379684448,
+    "mae": 0.010206426493823528,
+    "params": 17857,
+    "fp32_kb": 69.75390625,
+    "int8_kb": 17.4384765625,
+    "latency_ms": 0.42779999967024196
+  },
+  "autoencoder": {
+    "threshold": 0.0016036781016737223,
+    "fault_detection_rate": 0.9812037037037037,
+    "false_positive_rate": 0.004629629629629629,
+    "per_kind": {
+      "rs_drift": 1.0,
+      "ldr_dead": 1.0,
+      "dht_zero": 1.0,
+      "c_comp_stuck": 0.9248148148148149
+    }
+  },
+  "primary": "mlp"
+}

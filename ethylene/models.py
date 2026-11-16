@@ -48,15 +48,15 @@ def composite_loss(
 
 
 class Autoencoder(nn.Module):
-    """6-8-3-8-6 anomaly autoencoder; ``score`` is per-sample reconstruction MSE."""
+    """6-16-5-16-6 anomaly autoencoder; ``score`` is per-sample reconstruction MSE."""
 
     def __init__(self) -> None:
         super().__init__()
         self.net = nn.Sequential(
-            nn.Linear(6, 8), nn.ReLU(),
-            nn.Linear(8, 3),
-            nn.Linear(3, 8), nn.ReLU(),
-            nn.Linear(8, 6),
+            nn.Linear(6, 16), nn.ReLU(),
+            nn.Linear(16, 5),
+            nn.Linear(5, 16), nn.ReLU(),
+            nn.Linear(16, 6),
         )
 
     def forward(self, x: Tensor) -> Tensor:
