@@ -35,13 +35,21 @@ static uint16_t base_rs_n = 0, base_ldr_n = 0;
 static bool have_dht = false;
 static int8_t dht_t = 0;
 static uint8_t dht_rh = 0;
+static uint8_t dht_fails = 0;  // consecutive failed DHT reads
 
 static bool vent_on = false, scrub_on = false;
 static bool led_on = false;
 
 // ---------------------------------------------------------------------------------------------
+// Drives a relay pin only when RELAYS_ENABLED; otherwise the pins are never touched and the flags
+// (FLAG_VENT / FLAG_SCRUB) still report what the relays would be commanded to do.
 static void set_relay(uint8_t pin, bool on) {
+#if RELAYS_ENABLED
   digitalWrite(pin, (on == (RELAY_ACTIVE_HIGH != 0)) ? HIGH : LOW);
+#else
+  (void)pin;
+  (void)on;
+#endif
 }
 
 static void relays_off() {
@@ -64,6 +72,8 @@ static void start_phase(unsigned long now, unsigned long len) {
 static float read_adc_avg(uint8_t pin, bool *rail) {
   uint16_t sum = 0;
   *rail = false;
+  (void)analogRead(pin);  // discard: the first read after a channel switch carries the previous channel
+  delay(1);
   for (uint8_t i = 0; i < ADC_AVG; i++) {
     if (i) delay(1);
     uint16_t v = analogRead(pin);
@@ -122,8 +132,11 @@ static void sample(unsigned long now) {
     dht_t = t;
     dht_rh = h;
     have_dht = true;
+    dht_fails = 0;
   } else {
-    flags |= FLAG_DHT_FAIL;  // reuse the last good values, if any
+    flags |= FLAG_DHT_FAIL;  // reuse the last good values for up to DHT_MAX_FAILS samples
+    if (dht_fails < 255) dht_fails++;
+    if (dht_fails >= DHT_MAX_FAILS) have_dht = false;  // too stale to trust: no index until it recovers
   }
   float temp_c = have_dht ? (float)dht_t : NAN;
   float rh = have_dht ? (float)dht_rh : NAN;
@@ -190,6 +203,7 @@ static void sample(unsigned long now) {
 
 // ---------------------------------------------------------------------------------------------
 void setup() {
+#if RELAYS_ENABLED
   // Relays: latch the OFF level before switching to output so they never click on at boot.
   set_relay(PIN_VENT, false);
   set_relay(PIN_SCRUB, false);
@@ -197,11 +211,21 @@ void setup() {
   pinMode(PIN_SCRUB, OUTPUT);
   set_relay(PIN_VENT, false);
   set_relay(PIN_SCRUB, false);
+#endif
   pinMode(PIN_LED, OUTPUT);
   pinMode(PIN_DHT, INPUT_PULLUP);
 
   Serial.begin(SERIAL_BAUD);
   Serial.println(F(CSV_HEADER));
+
+  {  // one-off timing of the MLP on this board; a comment line, ignored by the app's parser
+    float probe[MLP_IN] = {1.0f, 1.0f, 600.0f, 600.0f, 25.0f, 60.0f};
+    unsigned long t0 = micros();
+    volatile float sink = mlp_forward(probe);
+    (void)sink;
+    Serial.print(F("# mlp_us="));
+    Serial.println(micros() - t0);
+  }
 
   unsigned long now = millis();
   start_phase(now, WARMUP_MS);
@@ -210,7 +234,10 @@ void setup() {
 
 void loop() {
   while (Serial.available() > 0) {
-    if (Serial.read() == 'r') start_phase(millis(), BASELINE_MS);
+    // 'r' re-baselines, but is ignored during the initial heater warm-up (it would cut it short).
+    if (Serial.read() == 'r' && !(phase == PHASE_WARMUP && phase_len_ms == WARMUP_MS)) {
+      start_phase(millis(), BASELINE_MS);
+    }
   }
 
   unsigned long now = millis();

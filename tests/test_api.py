@@ -96,3 +96,8 @@ def test_source_validation(client):
 def test_ports_and_page(client):
     assert isinstance(client.get("/api/ports").json()["ports"], list)
     assert "synthetic" in client.get("/").text
+
+
+def test_rebaseline_needs_serial(client):
+    r = client.post("/api/rebaseline")
+    assert r.status_code == 400 and "serial" in r.json()["detail"]

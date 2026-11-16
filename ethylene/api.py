@@ -83,6 +83,9 @@ class SourceRunner:
             self.engine.set_source("serial", src.port, True)
             self.engine.ingest(reading)
 
+    def send(self, data: bytes) -> bool:
+        return self._serial.send(data) if self._serial is not None else False
+
     def stop(self) -> None:
         self._stop.set()
         if self._serial is not None:
@@ -134,6 +137,13 @@ def create_app(artifacts_dir: str = "artifacts", autostart: bool = True, sim_int
         except ValueError as exc:
             raise HTTPException(status_code=400, detail=str(exc)) from None
         return {"source": engine.snapshot()["source"]}
+
+    @app.post("/api/rebaseline")
+    def rebaseline():
+        need_engine()
+        if not runner.send(b"r"):
+            raise HTTPException(status_code=400, detail="not connected to a serial source")
+        return {"sent": True}
 
     @app.get("/api/state")
     def state():

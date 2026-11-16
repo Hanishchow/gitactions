@@ -128,9 +128,13 @@ def load_csv(path) -> Dataset:
         col = {name: i for i, name in enumerate(header)}
 
         t_ms, X, y, run, flags = [], [], [], [], []
+        session = 0
         for row in reader:
-            if not row:
-                continue  # blank line
+            if not row or row[0].lstrip().startswith("#"):
+                continue  # blank line or firmware comment (for example `# mlp_us=...`)
+            if [c.strip() for c in row] == header:
+                session += 1  # the board reset and printed the header again: a new run
+                continue
             line = reader.line_num
             if len(row) != len(header):
                 raise ValueError(f"line {line}: expected {len(header)} fields, got {len(row)}")
@@ -141,12 +145,14 @@ def load_csv(path) -> Dataset:
                 y.append(_parse(row[col["label"]], "label", line))
             if "run" in col:
                 run.append(_parse(row[col["run"]], "run", line, int))
+            else:
+                run.append(session)
 
     n = len(t_ms)
     return Dataset(
         X=np.array(X, dtype=np.float32).reshape(n, len(FEATURE_NAMES)),
         y=np.array(y, dtype=np.float32) if "label" in col else None,
-        run=np.array(run, dtype=np.int32) if "run" in col else np.zeros(n, dtype=np.int32),
+        run=np.array(run, dtype=np.int32),
         t_s=(np.array(t_ms, dtype=np.float64) / 1000.0).astype(np.float32),
         flags=np.array(flags, dtype=np.int32),
     )

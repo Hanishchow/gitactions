@@ -321,3 +321,14 @@ def test_load_csv_reads_trailing_label_column(tmp_path):
 def test_load_csv_header_only_gives_empty_dataset(tmp_path):
     ds = load_csv(write(tmp_path, HEADER + "\n"))
     assert ds.X.shape == (0, 6) and ds.t_s.shape == (0,) and ds.y is None
+
+
+def test_load_csv_skips_comments_and_starts_new_run_on_repeated_header(tmp_path):
+    header = ",".join(CSV_COLUMNS)
+    rows = ["# mlp_us=812345", "2000,500,0.8,250,600,650,24,60,0.5,0", "4000,500,0.8,251,600,650,24,60,0.5,0",
+            header, "# mlp_us=812000", "2000,500,0.8,252,600,650,24,60,0.5,0"]
+    path = tmp_path / "raw_serial.csv"
+    path.write_text(header + "\n" + "\n".join(rows) + "\n")
+    ds = load_csv(path)
+    assert len(ds.X) == 3
+    assert ds.run.tolist() == [0, 0, 1]

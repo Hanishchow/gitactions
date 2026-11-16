@@ -24,6 +24,7 @@ GET /api/benchmark -> metrics.json: {"data": {"kind","n_train","n_val","n_test"}
 GET /api/ports -> {"ports": [str, ...]}
 POST /api/source  JSON {"kind": "sim"|"serial", "port"?: str, "baud"?: int} -> 200 {"source": {...as above}} | 400 {"detail": str}
 POST /api/analyze-csv  multipart field `file` -> 200 {"rows": int, "mean_index": float, "anomaly_fraction": float, "decision": {...}, "first": [row x5], "last": [row x5]}, row = {"t_s": float, "index": float|null, "anomaly": bool, "c_comp": float, "temp_c": float, "rh": float} | 400 {"detail": str}
+POST /api/rebaseline -> 200 {"sent": true} | 400 {"detail": str} (sends 'r' to a connected serial board)
 POST /api/ask  JSON {"question": str|null} -> 200 {"text": str, "ok": bool, "source": "qwen"|"fallback", "error": str|null}
 Static page banner text must include: "Metrics are on synthetic data, not field accuracy".
 

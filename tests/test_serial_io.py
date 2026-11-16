@@ -3,6 +3,7 @@ import math
 
 import pytest
 
+from ethylene import serial_io
 from ethylene.data import CSV_COLUMNS, FLAG_WARMUP
 from ethylene.serial_io import Reading, SerialSource, SimulatedSource, parse_line
 
@@ -77,3 +78,42 @@ def test_serial_source_reconnects():
     src.close()
     assert len(got) == 2 and all(r.t_ms == 12000 for r in got)
     assert calls == ["COM9", "COM9"]
+
+
+def test_send_only_when_connected():
+    sent = []
+
+    class Writable(FakeSerial):
+        def write(self, data):
+            sent.append(data)
+
+        def flush(self):
+            pass
+
+    src = SerialSource("COM9", serial_factory=lambda p, b, timeout: Writable([(GOOD + "\n").encode()]),
+                       reconnect_delay_s=0.0)
+    assert src.send(b"r") is False
+    gen = src.readings()
+    next(gen)
+    assert src.send(b"r") is True and sent == [b"r"]
+    src.close()
+    assert src.send(b"r") is False
+
+
+def test_default_open_keeps_dtr_low_before_open(monkeypatch):
+    import serial
+
+    events = []
+
+    class Fake:
+        def __setattr__(self, name, value):
+            events.append(name)
+            object.__setattr__(self, name, value)
+
+        def open(self):
+            events.append("open")
+
+    monkeypatch.setattr(serial, "Serial", Fake)
+    ser = serial_io._open_without_reset("COM9", 115200, 1)
+    assert ser.dtr is False and ser.rts is False
+    assert events.index("dtr") < events.index("open") and events.index("rts") < events.index("open")

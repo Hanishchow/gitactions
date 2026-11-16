@@ -111,6 +111,18 @@ def list_ports() -> list[str]:
         return []
 
 
+def _open_without_reset(port: str, baud: int, timeout: float):
+    """Open the port with DTR/RTS low: pyserial asserts DTR on open, which auto-resets a Mega."""
+    import serial
+
+    ser = serial.Serial()
+    ser.port, ser.baudrate, ser.timeout = port, baud, timeout
+    ser.dtr = False
+    ser.rts = False
+    ser.open()
+    return ser
+
+
 class SerialSource:
     """Reads the Mega over USB serial, reconnecting after a serial error."""
 
@@ -124,10 +136,7 @@ class SerialSource:
         self.connected = False
 
     def _open(self):
-        factory = self._factory
-        if factory is None:
-            import serial
-            factory = serial.Serial
+        factory = self._factory or _open_without_reset
         return factory(self.port, self.baud, timeout=1)
 
     def readings(self) -> Iterator[Reading]:
@@ -149,6 +158,18 @@ class SerialSource:
                     return
                 time.sleep(self.reconnect_delay_s)
         self._shutdown()
+
+    def send(self, data: bytes) -> bool:
+        """Write bytes to the board (for example b'r' to re-baseline). False when not connected."""
+        ser = self._ser
+        if ser is None or not self.connected:
+            return False
+        try:
+            ser.write(data)
+            ser.flush()
+            return True
+        except Exception:
+            return False
 
     def _shutdown(self) -> None:
         ser, self._ser = self._ser, None

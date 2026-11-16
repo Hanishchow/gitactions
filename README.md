@@ -29,7 +29,7 @@ captured at the same time.
 | MQ sensor analog out | A0 |
 | LDR divider | A1 |
 | DHT11 data (with pull-up) | D22 |
-| Vent relay / scrub relay | D30 / D31 |
+| Vent relay / scrub relay (disabled by default, see below) | D30 / D31 |
 | Status LED | D13 |
 | USB serial | 115200 baud |
 
@@ -43,6 +43,25 @@ Flash with `arduino-cli` (compiled size: 23% flash, 27% RAM):
 arduino-cli core install arduino:avr
 arduino-cli compile --upload -p COM4 --fqbn arduino:avr:mega:cpu=atmega2560 firmware/ethylene_mega
 ```
+
+## Real-hardware notes
+
+- **Relays are off by default** (`RELAYS_ENABLED 0` in `config.h`). The model was trained on simulated data, so on real
+  sensors the index can be arbitrary until you recalibrate or retrain with logged data; flags 8/16 still show what would be
+  commanded. Before enabling, bench-test polarity with no load (many blue opto modules are active-low: set
+  `RELAY_ACTIVE_HIGH 0`) and add a 10 kOhm resistor from each relay input to its OFF level, because the pins float during
+  the ~2 s bootloader.
+- **Opening the serial port can reset the Mega** (DTR). The app opens it with DTR/RTS low, but some CH340 drivers still pulse
+  it; a 10 uF capacitor from RESET to GND stops auto-reset for good (remove it to upload sketches). A reset restarts the
+  3-minute warm-up and takes R0 from whatever air is present, so reconnect only in clean air. Only one program can hold the
+  COM port: close the Arduino serial monitor before starting the app.
+- **MQ sensors need burn-in.** After a long idle a new MQ element needs 24-48 h powered, and even then R0 taken 3 minutes after
+  a cold start is inside the warm-up drift. Let the sensor run 15-30 minutes in clean air, then re-baseline with
+  `POST /api/rebaseline` (sends `r`; ignored during the first warm-up).
+- A `# mlp_us=...` comment line after the header reports one MLP inference time on your board (the app and `load_csv` ignore
+  `#` lines; a repeated header in a log marks a board reset and starts a new run).
+- The DHT11 needs a 4.7-10 kOhm pull-up to 5 V; with a long cable or weak pull-up reads fail safe (flag 2). After 15 failed
+  reads in a row (~30 s) the last good T/RH is dropped and no index is produced.
 
 ## Run the app
 

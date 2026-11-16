@@ -13,8 +13,13 @@
 #define PIN_LED 13        // status LED (on = warm-up / baseline)
 #define SERIAL_BAUD 115200
 
-// Relay modules differ: 1 = energise with HIGH, 0 = active-low module.
-#define RELAY_ACTIVE_HIGH 1
+// Relays are DISABLED by default: the model was trained on simulated data, so on real sensors the index
+// can be arbitrary until you recalibrate or retrain. While 0 the relay pins are never touched, and
+// FLAG_VENT / FLAG_SCRUB still report what would be commanded. Before setting 1, bench-test polarity with
+// no load: many blue opto relay modules are ACTIVE-LOW (set RELAY_ACTIVE_HIGH 0). The pins float during
+// the ~2 s bootloader, so add a 10k resistor from each relay input to its OFF level.
+#define RELAYS_ENABLED 0
+#define RELAY_ACTIVE_HIGH 1  // 1 = energise with HIGH, 0 = active-low module
 
 // ---- Sensor model (paper / common MQ-135 curve) ----
 #define SENSOR_A 116.6020682
@@ -28,6 +33,7 @@
 #define WARMUP_MS 180000UL    // heater warm-up after power-up, no index
 #define BASELINE_MS 30000UL   // last part of warm-up: R0 = mean Rs, LDR_blk = mean LDR (clean air)
 #define SAMPLE_MS 2000UL      // one CSV line per sample; also keeps DHT11 reads >= 1 s apart
+#define DHT_MAX_FAILS 15      // consecutive failed DHT reads (~30 s) before the last good T/RH is dropped
 
 // ---- Relay thresholds on the ripeness index, with hysteresis ----
 #define VENT_IDX 0.90
