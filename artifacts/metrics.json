@@ -1,36 +1,283 @@
 {
   "data": {
     "kind": "synthetic",
+    "generator": "realistic: cultivars, sensor-unit spread, interferents, drift, ADC",
     "n_train": 25200,
     "n_val": 5400,
-    "n_test": 5400
+    "n_test": 5400,
+    "ood_sets": [
+      "unseen_cultivars",
+      "cold_chain",
+      "sensor_shift"
+    ]
   },
   "mlp": {
-    "r2": 0.9964422583580017,
-    "mae": 0.01194214541465044,
-    "params": 45057,
-    "fp32_kb": 176.00390625,
-    "int8_kb": 44.0009765625,
-    "latency_ms": 0.08735000028536888,
-    "monotonic_violation_rate": 0.0
+    "r2": 0.6747772693634033,
+    "mae": 0.09090495854616165,
+    "params": 257,
+    "fp32_kb": 1.00390625,
+    "int8_kb": 0.2509765625,
+    "latency_ms": 0.03554999966581818,
+    "macs": 232,
+    "est_mega_ms": 3.4510208183776023,
+    "architecture": [
+      16,
+      8
+    ],
+    "monotonic_violation_rate": 0.003518518526107073
   },
   "transformer": {
-    "r2": 0.9968222379684448,
-    "mae": 0.010206426493823528,
+    "r2": 0.5784779787063599,
+    "mae": 0.09551320970058441,
     "params": 17857,
     "fp32_kb": 69.75390625,
     "int8_kb": 17.4384765625,
-    "latency_ms": 0.42779999967024196
+    "latency_ms": 0.3685000010591466
   },
   "autoencoder": {
-    "threshold": 0.0016036781016737223,
-    "fault_detection_rate": 0.9812037037037037,
-    "false_positive_rate": 0.004629629629629629,
+    "threshold": 0.00485902838408947,
+    "fault_detection_rate": 0.9487037037037037,
+    "false_positive_rate": 0.013333333333333334,
     "per_kind": {
       "rs_drift": 1.0,
       "ldr_dead": 1.0,
       "dht_zero": 1.0,
-      "c_comp_stuck": 0.9248148148148149
+      "c_comp_stuck": 0.7948148148148149
+    },
+    "ae_only": {
+      "fault_detection_rate": 0.9486574074074074,
+      "per_kind": {
+        "rs_drift": 1.0,
+        "ldr_dead": 1.0,
+        "dht_zero": 0.9998148148148148,
+        "c_comp_stuck": 0.7948148148148149
+      }
+    }
+  },
+  "ood": {
+    "unseen_cultivars": {
+      "mlp": {
+        "r2": 0.6437487602233887,
+        "mae": 0.09694413840770721
+      },
+      "transformer": {
+        "r2": 0.5704784989356995,
+        "mae": 0.0975443497300148
+      }
+    },
+    "cold_chain": {
+      "mlp": {
+        "r2": 0.618771493434906,
+        "mae": 0.09858296811580658
+      },
+      "transformer": {
+        "r2": 0.5996755361557007,
+        "mae": 0.0941358134150505
+      }
+    },
+    "sensor_shift": {
+      "mlp": {
+        "r2": 0.5007070899009705,
+        "mae": 0.1054198145866394
+      },
+      "transformer": {
+        "r2": 0.45354318618774414,
+        "mae": 0.10048025846481323
+      }
+    }
+  },
+  "baselines": {
+    "linear_c_comp_only": {
+      "id_test": {
+        "r2": 0.5809879302978516,
+        "mae": 0.10118630528450012
+      },
+      "unseen_cultivars": {
+        "r2": 0.4820477366447449,
+        "mae": 0.11895658075809479
+      },
+      "cold_chain": {
+        "r2": 0.6285777688026428,
+        "mae": 0.0995582863688469
+      },
+      "sensor_shift": {
+        "r2": 0.021337270736694336,
+        "mae": 0.13589489459991455
+      }
+    },
+    "ridge_all_features": {
+      "id_test": {
+        "r2": 0.7084106206893921,
+        "mae": 0.0857091024518013
+      },
+      "unseen_cultivars": {
+        "r2": 0.6532467603683472,
+        "mae": 0.09716496616601944
+      },
+      "cold_chain": {
+        "r2": 0.715950608253479,
+        "mae": 0.08403968065977097
+      },
+      "sensor_shift": {
+        "r2": 0.5453172922134399,
+        "mae": 0.10153760761022568
+      }
+    },
+    "gradient_boosting": {
+      "id_test": {
+        "r2": 0.6261056567212402,
+        "mae": 0.09510519762299055
+      },
+      "unseen_cultivars": {
+        "r2": 0.47225639645983997,
+        "mae": 0.12041548390261013
+      },
+      "cold_chain": {
+        "r2": 0.6519996828978012,
+        "mae": 0.09373819394879673
+      },
+      "sensor_shift": {
+        "r2": 0.451587694959269,
+        "mae": 0.11361096641009788
+      }
+    }
+  },
+  "coverage": {
+    "train": {
+      "rs_r0": {
+        "min": 0.4786212742328644,
+        "p1": 0.5258613204956055,
+        "median": 0.6584011614322662,
+        "p99": 0.862654447555542,
+        "max": 0.9462591409683228,
+        "frac_nonfinite": 0.0,
+        "frac_outside_physical": 0.0
+      },
+      "c_comp": {
+        "min": 124.61784362792969,
+        "p1": 160.18454559326173,
+        "median": 338.8506622314453,
+        "p99": 628.8609326171872,
+        "max": 809.27099609375,
+        "frac_nonfinite": 0.0,
+        "frac_outside_physical": 0.0
+      },
+      "ldr_raw": {
+        "min": 163.0,
+        "p1": 221.0,
+        "median": 444.0,
+        "p99": 766.0,
+        "max": 928.0,
+        "frac_nonfinite": 0.0,
+        "frac_outside_physical": 0.0
+      },
+      "ldr_blk": {
+        "min": 266.0,
+        "p1": 284.0,
+        "median": 546.5,
+        "p99": 830.0,
+        "max": 882.0,
+        "frac_nonfinite": 0.0,
+        "frac_outside_physical": 0.0
+      },
+      "temp_c": {
+        "min": 3.0,
+        "p1": 6.0,
+        "median": 20.0,
+        "p99": 32.0,
+        "max": 35.0,
+        "frac_nonfinite": 0.0,
+        "frac_outside_physical": 0.0
+      },
+      "rh": {
+        "min": 42.0,
+        "p1": 50.0,
+        "median": 78.0,
+        "p99": 100.0,
+        "max": 100.0,
+        "frac_nonfinite": 0.0,
+        "frac_outside_physical": 0.0
+      }
+    },
+    "ood": {
+      "unseen_cultivars": {
+        "rs_r0": {
+          "frac_far": 0.0011111111111111111,
+          "frac_outside_physical": 0.0
+        },
+        "c_comp": {
+          "frac_far": 0.0,
+          "frac_outside_physical": 0.0
+        },
+        "ldr_raw": {
+          "frac_far": 0.0,
+          "frac_outside_physical": 0.0
+        },
+        "ldr_blk": {
+          "frac_far": 0.0,
+          "frac_outside_physical": 0.0
+        },
+        "temp_c": {
+          "frac_far": 0.0,
+          "frac_outside_physical": 0.0
+        },
+        "rh": {
+          "frac_far": 0.0,
+          "frac_outside_physical": 0.0
+        }
+      },
+      "cold_chain": {
+        "rs_r0": {
+          "frac_far": 0.0,
+          "frac_outside_physical": 0.0
+        },
+        "c_comp": {
+          "frac_far": 0.0002777777777777778,
+          "frac_outside_physical": 0.0
+        },
+        "ldr_raw": {
+          "frac_far": 0.0,
+          "frac_outside_physical": 0.0
+        },
+        "ldr_blk": {
+          "frac_far": 0.0,
+          "frac_outside_physical": 0.0
+        },
+        "temp_c": {
+          "frac_far": 0.0,
+          "frac_outside_physical": 0.0
+        },
+        "rh": {
+          "frac_far": 0.0,
+          "frac_outside_physical": 0.0
+        }
+      },
+      "sensor_shift": {
+        "rs_r0": {
+          "frac_far": 0.0,
+          "frac_outside_physical": 0.0
+        },
+        "c_comp": {
+          "frac_far": 0.025,
+          "frac_outside_physical": 0.0
+        },
+        "ldr_raw": {
+          "frac_far": 0.0,
+          "frac_outside_physical": 0.0
+        },
+        "ldr_blk": {
+          "frac_far": 0.0,
+          "frac_outside_physical": 0.0
+        },
+        "temp_c": {
+          "frac_far": 0.0,
+          "frac_outside_physical": 0.0
+        },
+        "rh": {
+          "frac_far": 0.0,
+          "frac_outside_physical": 0.0
+        }
+      }
     }
   },
   "primary": "mlp"

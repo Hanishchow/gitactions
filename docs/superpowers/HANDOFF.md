@@ -5,15 +5,16 @@ Branch `claude/arduino-sensors-ml-app-aed010`. Read `README.md` first, then the 
 and `handoff/progress.md` (ledger of rulings; its commit SHAs predate a history rewrite and are stale).
 
 ## Status
-Built, tested (448 pytest cases pass) and committed: physics formulas, data layer, simulator, models
-(autoencoder widened to 6-16-5-16-6 because a 3-wide bottleneck detected only 55% of faults), training and
-benchmark (`artifacts/`), int8 export and generated `model_weights.h`, serial parser, decision engine, Qwen
-client with fallback, engine, FastAPI app, Mega firmware (compiles: 23% flash, 27% RAM).
+Built, tested and committed: physics formulas, data layer, REALISTIC simulator (the first one was trivially easy:
+R2 0.996 from one feature), shifted-condition test sets, benchmark of candidate nets and baselines, compact
+6-16-8-1 network (257 weights) shipped, autoencoder 6-16-5-16-6 plus a 4-sigma range gate, generic int8 export,
+serial parser, decision engine, Qwen client with fallback, engine, FastAPI app, Mega firmware with a serial
+self-test (5% flash, 5% RAM, 5.8 ms per inference measured). The board was flashed and `python -m ethylene.hil`
+passed 43/43 vectors against the Python reference.
 
 Not done:
-- Flashing and verifying the firmware on the real board and sensors (board was not connected when last
-  tried: COM4 CH340 entry was stale). Then read serial output, confirm `rs_r0`, `temp_c`, `idx` look sane and
-  that `idx` from the board matches `ethylene.export.quantized_forward` for the same inputs.
+- Wiring the real sensors and checking live readings (`rs_r0`, `temp_c`, `idx`); everything on-chip was verified
+  with the self-test only. Real logged data is needed to know whether any network beats a ridge regression.
 - Front end: the user will supply a template; put it at `ethylene/static/index.html` using the JSON contract in
   `handoff/contracts.md` section B. An unreviewed draft dashboard may exist untracked in the original checkout.
 - Qwen live check: `OLLAMA_URL` must point at an Ollama server with `qwen3-fast` (the user's "omen" PC,

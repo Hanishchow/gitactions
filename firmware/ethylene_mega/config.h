@@ -13,6 +13,11 @@
 #define PIN_LED 13        // status LED (on = warm-up / baseline)
 #define SERIAL_BAUD 115200
 
+// Serial self-test: send one line `T,adc_mq,ldr_raw,temp_c,rh,r0_ohm,ldr_blk` and the board runs the full
+// calculation chain (Rs, c, compensation, MLP) on those numbers and prints the result with FLAG_SELFTEST set.
+// It touches no sensor, baseline, relay or state, so it verifies the on-chip maths with nothing wired.
+#define SELFTEST_CMD 1
+
 // Relays are DISABLED by default: the model was trained on simulated data, so on real sensors the index
 // can be arbitrary until you recalibrate or retrain. While 0 the relay pins are never touched, and
 // FLAG_VENT / FLAG_SCRUB still report what would be commanded. Before setting 1, bench-test polarity with
@@ -46,5 +51,6 @@
 #define FLAG_MQ_FAULT 4
 #define FLAG_VENT 8
 #define FLAG_SCRUB 16
+#define FLAG_SELFTEST 32  // line produced by the serial self-test command, not by sensors
 
 #endif

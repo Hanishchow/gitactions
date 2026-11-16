@@ -13,11 +13,11 @@ from torch.nn import functional as F
 
 
 class ConstrainedMLP(nn.Module):
-    """6-256-128-64-32-1, ReLU hidden, linear output (45,057 params)."""
+    """6-<hidden>-1, ReLU hidden, linear output. The default hidden=(256, 128, 64, 32) is the paper's net (45,057 params)."""
 
-    def __init__(self) -> None:
+    def __init__(self, hidden: tuple[int, ...] = (256, 128, 64, 32)) -> None:
         super().__init__()
-        sizes = (6, 256, 128, 64, 32)
+        sizes = (6, *hidden)
         layers: list[nn.Module] = []
         for n_in, n_out in zip(sizes[:-1], sizes[1:]):
             layers += [nn.Linear(n_in, n_out), nn.ReLU()]

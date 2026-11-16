@@ -47,8 +47,8 @@ def test_header_contains_progmem_arrays(q, tmp_path):
     path = tmp_path / "model_weights.h"
     export.write_header(q, path)
     text = path.read_text()
-    for token in ("PROGMEM", "const int8_t W1[1536]", "const int8_t W2A[16384]", "const int8_t W2B[16384]",
-                  "const float SCALER_STD[6]", "#define MLP_L1 256"):
+    for token in ("PROGMEM", "const int8_t W_ALL[", "const uint16_t MLP_SIZES[", "const float SCALER_STD[6]",
+                  "#define MLP_NLAYERS"):
         assert token in text
 
 

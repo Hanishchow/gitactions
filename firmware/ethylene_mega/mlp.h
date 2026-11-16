@@ -1,26 +1,20 @@
-// The paper's 6-256-128-64-32-1 MLP, int8 weights with per-row float scales, read from PROGMEM.
-// Layout and forward pass: contracts section A (mirrored in Python by ethylene/export.py), except that
-// W2 is split into W2A (rows 0-63) and W2B (rows 64-127) because avr-gcc caps one object at 32767 bytes:
+// Generic small MLP: int8 weights with per-row float scales, read from PROGMEM. The network shape and all
+// tables come from the generated model_weights.h (python -m ethylene.export), so any 6-<hidden>-1 ReLU net
+// whose weights fit one AVR object (<= 32767 bytes) runs here without code changes.
 //   a0 = (x - SCALER_MEAN) / SCALER_STD
-//   a_out[j] = (sum_i W[j*in + i] * a_in[i]) * S[j] + B[j]      ReLU after layers 1-4, none after 5.
-// Activations live in two 256-float ping-pong buffers (2 KB SRAM total), nothing else is allocated.
+//   a_out[j] = (sum_i W[j*in + i] * a_in[i]) * S[j] + B[j]      ReLU after every layer except the last.
+// W_ALL / S_ALL / B_ALL hold the layers one after another; MLP_SIZES = {inputs, layer widths...}.
+// Activations live in two MLP_MAX_WIDTH-float ping-pong buffers, nothing else is allocated.
 //
-// pgm_read_byte/pgm_read_float use 16-bit (near) addresses: fine while the PROGMEM tables stay in the
-// low 64 KB of flash. avr-gcc places .progmem right after the vector table, and this model's tables are
-// about 48 KB, so they do. A model with more than ~60 KB of tables would need pgm_read_*_far.
+// pgm_read_* use 16-bit (near) addresses: fine while the PROGMEM tables stay in the low 64 KB of flash.
 #ifndef ETHYLENE_MLP_H
 #define ETHYLENE_MLP_H
 
 #include <avr/pgmspace.h>
-// Arduino's binary.h defines B1 (= 1) for binary literals; it would clash with the bias table B1.
-#ifdef B1
-#undef B1
-#endif
 #include "model_weights.h"
 
-#define MLP_BUF 256
-static float mlp_buf_a[MLP_BUF];
-static float mlp_buf_b[MLP_BUF];
+static float mlp_buf_a[MLP_MAX_WIDTH];
+static float mlp_buf_b[MLP_MAX_WIDTH];
 
 static void mlp_layer(const int8_t *W, const float *S, const float *B, const float *in, uint16_t n_in,
                       float *out, uint16_t n_out, bool relu) {
@@ -41,17 +35,27 @@ static void mlp_layer(const int8_t *W, const float *S, const float *B, const flo
 // x in model input order [Rs/R0, c_comp, LDR_raw, LDR_blk, T, RH]. Returns the raw (unclamped) index;
 // non-finite when the weights are unusable (e.g. the zero-filled placeholder) -- callers must check.
 float mlp_forward(const float x[MLP_IN]) {
+  float *in = mlp_buf_a;
+  float *out = mlp_buf_b;
   for (uint8_t i = 0; i < MLP_IN; i++) {
-    mlp_buf_a[i] = (x[i] - pgm_read_float(SCALER_MEAN + i)) / pgm_read_float(SCALER_STD + i);
+    in[i] = (x[i] - pgm_read_float(SCALER_MEAN + i)) / pgm_read_float(SCALER_STD + i);
   }
-  mlp_layer(W1, S1, B1, mlp_buf_a, MLP_IN, mlp_buf_b, MLP_L1, true);
-  // W2 (128x256 = 32 KB) is stored as two 64-row halves: no AVR object may reach 32768 bytes.
-  mlp_layer(W2A, S2, B2, mlp_buf_b, MLP_L1, mlp_buf_a, MLP_L2 / 2, true);
-  mlp_layer(W2B, S2 + MLP_L2 / 2, B2 + MLP_L2 / 2, mlp_buf_b, MLP_L1, mlp_buf_a + MLP_L2 / 2, MLP_L2 / 2, true);
-  mlp_layer(W3, S3, B3, mlp_buf_a, MLP_L2, mlp_buf_b, MLP_L3, true);
-  mlp_layer(W4, S4, B4, mlp_buf_b, MLP_L3, mlp_buf_a, MLP_L4, true);
-  mlp_layer(W5, S5, B5, mlp_buf_a, MLP_L4, mlp_buf_b, MLP_OUT, false);
-  return mlp_buf_b[0];
+  const int8_t *w = W_ALL;
+  const float *s = S_ALL;
+  const float *b = B_ALL;
+  uint16_t n_in = pgm_read_word(MLP_SIZES);
+  for (uint8_t l = 0; l < MLP_NLAYERS; l++) {
+    uint16_t n_out = pgm_read_word(MLP_SIZES + l + 1);
+    mlp_layer(w, s, b, in, n_in, out, n_out, l < MLP_NLAYERS - 1);
+    w += (uint16_t)(n_in * n_out);
+    s += n_out;
+    b += n_out;
+    float *tmp = in;
+    in = out;
+    out = tmp;
+    n_in = n_out;
+  }
+  return in[0];  // the last layer's output is in the buffer that was just swapped into `in`
 }
 
 #endif

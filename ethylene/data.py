@@ -18,6 +18,7 @@ FLAG_DHT_FAIL = 2
 FLAG_MQ_FAULT = 4
 FLAG_VENT = 8
 FLAG_SCRUB = 16
+FLAG_SELFTEST = 32  # line produced by the firmware's serial self-test command, not by sensors
 
 STD_FLOOR = 1e-6
 
@@ -25,13 +26,14 @@ STD_FLOOR = 1e-6
 @dataclass
 class Dataset:
     """Row-aligned arrays: X (N,6) float32 in FEATURE_NAMES order, y (N,) float32 or None,
-    run (N,) int32, t_s (N,) float32, flags (N,) int32."""
+    run (N,) int32, t_s (N,) float32, flags (N,) int32, group (N,) int32 or None (cultivar id)."""
 
     X: np.ndarray
     y: np.ndarray | None
     run: np.ndarray
     t_s: np.ndarray
     flags: np.ndarray
+    group: np.ndarray | None = None
 
     def _take(self, mask) -> "Dataset":
         return Dataset(
@@ -40,6 +42,7 @@ class Dataset:
             run=self.run[mask],
             t_s=self.t_s[mask],
             flags=self.flags[mask],
+            group=None if self.group is None else self.group[mask],
         )
 
 

@@ -1,6 +1,6 @@
 # Contracts for parallel work (controller rulings)
 
-## A. model_weights.h layout (written by T6 `ethylene/export.py`, read by T7 firmware `mlp.h`)
+## A. model_weights.h layout (SUPERSEDED: now a generic layout, see ethylene/export.py docstring: MLP_SIZES, W_ALL, S_ALL, B_ALL, SCALER_*) (written by T6 `ethylene/export.py`, read by T7 firmware `mlp.h`)
 Header is include-guarded, starts with `#include <stdint.h>` and `#include <avr/pgmspace.h>`, defines
 `MLP_IN 6, MLP_L1 256, MLP_L2 128, MLP_L3 64, MLP_L4 32, MLP_OUT 1`, then PROGMEM arrays, all flat row-major `[out][in]`:
 `const int8_t W1[256*6] PROGMEM`, `W2[128*256]`, `W3[64*128]`, `W4[32*64]`, `W5[1*32]`;

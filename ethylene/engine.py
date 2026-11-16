@@ -11,7 +11,7 @@ import torch
 from ethylene.data import FLAG_WARMUP, Dataset
 from ethylene.decide import decide
 from ethylene.serial_io import Reading
-from ethylene.train import WINDOW, Artifacts
+from ethylene.train import WINDOW, Artifacts, anomaly_mask
 
 HISTORY_LEN = 300
 FEATURES = ("rs_r0", "c_comp", "ldr_raw", "ldr_blk", "temp_c", "rh")
@@ -59,8 +59,8 @@ class Engine:
             else:
                 xs = torch.as_tensor(art.scaler.transform(x[None, :]))
                 mlp = float(art.mlp(xs)[0])
-                score = float(art.ae.score(xs)[0])
-                anomaly = score > art.threshold
+                flagged, scores = anomaly_mask(art.ae, art.scaler, art.threshold, x[None, :])
+                score, anomaly = float(scores[0]), bool(flagged[0])
                 self._window.append(xs[0].numpy())
                 if len(self._window) == WINDOW:
                     w = torch.as_tensor(np.stack(self._window)[None, ...])
@@ -103,7 +103,7 @@ def batch_analyze(art: Artifacts, ds: Dataset) -> dict:
         with torch.no_grad():
             xs = torch.as_tensor(art.scaler.transform(ds.X[ok]))
             index[ok] = art.mlp(xs).numpy()
-            anomaly[ok] = art.ae.score(xs).numpy() > art.threshold
+            anomaly[ok] = anomaly_mask(art.ae, art.scaler, art.threshold, ds.X[ok])[0]
     last_index = None if np.isnan(index[-1]) else float(index[-1])
     decision = decide(last_index, bool(anomaly[-1]), int(ds.flags[-1]))
 

@@ -36,7 +36,7 @@ def test_config_constants_match_python():
     assert float(_define(cfg_h, "SENSOR_B")) == pytest.approx(cfg.B, rel=1e-9)
     assert float(_define(cfg_h, "RL_OHM")) == cfg.rl_ohm
     assert int(float(_define(cfg_h, "ADC_MAX"))) == cfg.adc_max
-    for name in ("FLAG_WARMUP", "FLAG_DHT_FAIL", "FLAG_MQ_FAULT", "FLAG_VENT", "FLAG_SCRUB"):
+    for name in ("FLAG_WARMUP", "FLAG_DHT_FAIL", "FLAG_MQ_FAULT", "FLAG_VENT", "FLAG_SCRUB", "FLAG_SELFTEST"):
         assert int(_define(cfg_h, name)) == getattr(data, name), name
     expected = {"WARMUP_MS": 180000, "BASELINE_MS": 30000, "SAMPLE_MS": 2000}
     for name, value in expected.items():
@@ -60,20 +60,22 @@ def test_math_header_uses_paper_constants():
         assert const in src, const
 
 
-def test_placeholder_weights_header_layout():
-    """Contracts section A: names and sizes model_weights.h must provide to mlp.h."""
+def test_weights_header_layout():
+    """names and sizes model_weights.h must provide to the generic mlp.h."""
     src = (FW / "model_weights.h").read_text(encoding="utf-8")
     assert "#include <avr/pgmspace.h>" in src
-    dims = {"MLP_IN": 6, "MLP_L1": 256, "MLP_L2": 128, "MLP_L3": 64, "MLP_L4": 32, "MLP_OUT": 1}
-    for name, value in dims.items():
-        assert int(_define(src, name)) == value, name
-    # W2 (32 KB) is split in two 64-row halves: avr-gcc rejects objects of 32768 bytes or more.
-    # Sizes must be literals: 128*256 overflows the AVR's 16-bit int.
-    sizes = {"W1": 1536, "W2A": 16384, "W2B": 16384, "W3": 8192, "W4": 2048, "W5": 32}
-    for arr, n in sizes.items():
-        assert re.search(rf"const int8_t {arr}\[{n}\] PROGMEM", src), arr
-    for arr in ("S1", "S2", "S3", "S4", "S5", "B1", "B2", "B3", "B4", "B5", "SCALER_MEAN", "SCALER_STD"):
-        assert re.search(rf"const float {arr}\[[^\]]+\] PROGMEM", src), arr
+    assert int(_define(src, "MLP_IN")) == 6
+    n_layers = int(_define(src, "MLP_NLAYERS"))
+    assert n_layers >= 2
+    sizes = [int(v) for v in re.search(r"const uint16_t MLP_SIZES\[\d+\] PROGMEM = \{([^}]*)\}", src).group(1).split(",")]
+    assert len(sizes) == n_layers + 1 and sizes[0] == 6 and sizes[-1] == 1
+    assert int(_define(src, "MLP_MAX_WIDTH")) == max(sizes)
+    n_w = sum(a * b for a, b in zip(sizes[:-1], sizes[1:]))
+    n_rows = sum(sizes[1:])
+    assert n_w <= 32767  # one AVR object
+    assert re.search(rf"const int8_t W_ALL\[{n_w}\] PROGMEM", src)
+    for arr, n in (("S_ALL", n_rows), ("B_ALL", n_rows), ("SCALER_MEAN", 6), ("SCALER_STD", 6)):
+        assert re.search(rf"const float {arr}\[{n}\] PROGMEM", src), arr
 
 
 def test_compile_if_toolchain(tmp_path):

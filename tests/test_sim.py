@@ -3,7 +3,8 @@ import pytest
 
 from ethylene.data import Dataset
 from ethylene.physics import FEATURE_NAMES, SensorConfig, compensate, concentration
-from ethylene.sim import FAULT_KINDS, STAGE_MEANS, inject_faults, simulate
+from ethylene.sim import FAULT_KINDS, STAGE_MEANS, inject_faults
+from ethylene.sim import simulate_idealised as simulate
 
 COL = {name: i for i, name in enumerate(FEATURE_NAMES)}
 

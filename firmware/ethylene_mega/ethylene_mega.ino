@@ -106,6 +106,68 @@ static void apply_relays(float idx) {
 }
 
 // ---------------------------------------------------------------------------------------------
+static void print_csv(unsigned long now, float adc_mq, float rs_r0, float c_comp, float ldr_raw, float ldr_blk_out,
+                      float temp_c, float rh, float idx, bool idx_ok, uint8_t flags) {
+  Serial.print(now);
+  Serial.print(',');
+  Serial.print((unsigned int)(adc_mq + 0.5f));
+  Serial.print(',');
+  print_float(rs_r0);
+  Serial.print(',');
+  print_float(c_comp);
+  Serial.print(',');
+  print_float(ldr_raw);
+  Serial.print(',');
+  print_float(ldr_blk_out);
+  Serial.print(',');
+  print_float(temp_c);
+  Serial.print(',');
+  print_float(rh);
+  Serial.print(',');
+  if (idx_ok) print_float(idx);
+  else Serial.print(F("-1"));
+  Serial.print(',');
+  Serial.println(flags);
+}
+
+#if SELFTEST_CMD
+// `T,adc_mq,ldr_raw,temp_c,rh,r0_ohm,ldr_blk` -> one CSV line computed by the real chain, flags = FLAG_SELFTEST.
+static void run_selftest(const char *args) {
+  float v[6];
+  const char *p = args;
+  for (uint8_t k = 0; k < 6; k++) {
+    char *end;
+    v[k] = (float)strtod(p, &end);
+    if (end == p) {
+      Serial.println(F("# selftest: expected T,adc_mq,ldr_raw,temp_c,rh,r0_ohm,ldr_blk"));
+      return;
+    }
+    p = (*end == ',') ? end + 1 : end;
+  }
+  float adc_mq = v[0], ldr_raw = v[1], temp_c = v[2], rh = v[3], r0 = v[4], ldr_b = v[5];
+  float rs = adc_to_rs(adc_mq);
+  float rs_r0 = rs / r0;
+  float c_comp = compensate(concentration(rs_r0), temp_c, rh);
+  float idx = NAN;
+  if (isfinite(rs_r0) && isfinite(c_comp)) {
+    float x[MLP_IN] = {rs_r0, c_comp, ldr_raw, ldr_b, temp_c, rh};
+    idx = mlp_forward(x);
+  }
+  print_csv(millis(), adc_mq, rs_r0, c_comp, ldr_raw, ldr_b, temp_c, rh, idx, isfinite(idx), FLAG_SELFTEST);
+}
+#endif
+
+static char cmd_buf[80];
+static uint8_t cmd_len = 0;
+
+static void handle_command(const char *cmd) {
+#if SELFTEST_CMD
+  if (cmd[0] == 'T' && cmd[1] == ',') run_selftest(cmd + 2);
+#else
+  (void)cmd;
+#endif
+}
+
 static void sample(unsigned long now) {
   uint8_t flags = 0;
 
@@ -179,26 +241,7 @@ static void sample(unsigned long now) {
   else led_on = (phase == PHASE_WARMUP);
   digitalWrite(PIN_LED, led_on ? HIGH : LOW);
 
-  Serial.print(now);
-  Serial.print(',');
-  Serial.print((unsigned int)(adc_mq + 0.5f));
-  Serial.print(',');
-  print_float(rs_r0);
-  Serial.print(',');
-  print_float(c_comp);
-  Serial.print(',');
-  print_float(ldr_raw);
-  Serial.print(',');
-  print_float(ldr_blk_out);
-  Serial.print(',');
-  print_float(temp_c);
-  Serial.print(',');
-  print_float(rh);
-  Serial.print(',');
-  if (idx_ok) print_float(idx);
-  else Serial.print(F("-1"));
-  Serial.print(',');
-  Serial.println(flags);
+  print_csv(now, adc_mq, rs_r0, c_comp, ldr_raw, ldr_blk_out, temp_c, rh, idx, idx_ok, flags);
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -234,9 +277,20 @@ void setup() {
 
 void loop() {
   while (Serial.available() > 0) {
-    // 'r' re-baselines, but is ignored during the initial heater warm-up (it would cut it short).
-    if (Serial.read() == 'r' && !(phase == PHASE_WARMUP && phase_len_ms == WARMUP_MS)) {
-      start_phase(millis(), BASELINE_MS);
+    char c = (char)Serial.read();
+    if (c == 'r' && cmd_len == 0) {
+      // 'r' re-baselines, but is ignored during the initial heater warm-up (it would cut it short).
+      if (!(phase == PHASE_WARMUP && phase_len_ms == WARMUP_MS)) start_phase(millis(), BASELINE_MS);
+    } else if (c == '\n' || c == '\r') {
+      if (cmd_len > 0 && cmd_len < sizeof(cmd_buf)) {
+        cmd_buf[cmd_len] = 0;
+        handle_command(cmd_buf);
+      }
+      cmd_len = 0;
+    } else if (cmd_len < sizeof(cmd_buf) - 1) {
+      cmd_buf[cmd_len++] = c;
+    } else {
+      cmd_len = sizeof(cmd_buf);  // overlong line: ignored until its newline
     }
   }
 
