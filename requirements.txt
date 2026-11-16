@@ -1,1 +1,9 @@
+numpy
+torch
+scikit-learn
+fastapi
+uvicorn
+httpx
+pyserial
+python-multipart
 pytest
